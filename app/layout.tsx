@@ -15,13 +15,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <head>
+      <body className="antialiased">
         <Script
           src="//dapi.kakao.com/v2/maps/sdk.js?appkey=ca6753f95409db0f45755c0085d293f5"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
         />
-      </head>
-      <body className="antialiased">
         {children}
       </body>
     </html>
