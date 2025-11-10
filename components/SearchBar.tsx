@@ -38,30 +38,30 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg p-4 md:p-6 mb-6 border border-gray-100">
       {/* Search Input */}
-      <form onSubmit={handleSearchSubmit} className="mb-4">
+      <form onSubmit={handleSearchSubmit} className="mb-3 md:mb-4">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="병원명으로 검색하세요..."
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent text-[#242424]"
+            className="w-full pl-10 md:pl-12 pr-3 md:pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent text-sm md:text-base text-[#242424] placeholder:text-sm md:placeholder:text-base"
           />
         </div>
       </form>
 
       {/* Region Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {/* 시/도 선택 */}
         <div className="relative">
-          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <MapPin className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400 pointer-events-none" />
           <select
             value={selectedStage1}
             onChange={(e) => handleStage1Change(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent appearance-none bg-white text-[#242424]"
+            className="w-full pl-10 md:pl-12 pr-8 md:pr-10 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent appearance-none bg-white text-sm md:text-base text-[#242424] cursor-pointer"
           >
             <option value="">전체 지역</option>
             {Object.keys(regions).map((region) => (
@@ -70,16 +70,21 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
               </option>
             ))}
           </select>
+          <div className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
 
         {/* 시/군/구 선택 */}
         <div className="relative">
-          <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Filter className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400 pointer-events-none" />
           <select
             value={selectedStage2}
             onChange={(e) => handleStage2Change(e.target.value)}
             disabled={!selectedStage1}
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent appearance-none bg-white text-[#242424] disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full pl-10 md:pl-12 pr-8 md:pr-10 py-2.5 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#287dff] focus:border-transparent appearance-none bg-white text-sm md:text-base text-[#242424] disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer"
           >
             <option value="">전체 구/시</option>
             {selectedStage1 &&
@@ -89,20 +94,25 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
                 </option>
               ))}
           </select>
+          <div className="absolute right-3 md:right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
         </div>
       </div>
 
       {/* Selected filters display */}
       {(selectedStage1 || selectedStage2) && (
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-sm text-gray-500">필터:</span>
+        <div className="mt-3 md:mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs md:text-sm text-gray-500">필터:</span>
           {selectedStage1 && (
-            <span className="px-3 py-1 bg-[#eff6ff] text-[#287dff] rounded-full text-sm font-medium">
+            <span className="px-2 md:px-3 py-1 bg-[#eff6ff] text-[#287dff] rounded-full text-xs md:text-sm font-medium">
               {selectedStage1}
             </span>
           )}
           {selectedStage2 && (
-            <span className="px-3 py-1 bg-[#eff6ff] text-[#287dff] rounded-full text-sm font-medium">
+            <span className="px-2 md:px-3 py-1 bg-[#eff6ff] text-[#287dff] rounded-full text-xs md:text-sm font-medium">
               {selectedStage2}
             </span>
           )}
@@ -112,7 +122,7 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
               setSelectedStage2('');
               onRegionChange('', '');
             }}
-            className="ml-auto text-sm text-gray-500 hover:text-[#287dff] transition-colors"
+            className="ml-auto text-xs md:text-sm text-gray-500 hover:text-[#287dff] transition-colors font-medium"
           >
             초기화
           </button>

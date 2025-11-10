@@ -97,53 +97,53 @@ export default function Home() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-24 pb-12 bg-gradient-to-br from-[#287dff] to-[#417dff]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="pt-20 md:pt-24 pb-10 md:pb-12 bg-gradient-to-br from-[#287dff] to-[#417dff]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 px-2">
               실시간 응급실 병상 현황
             </h1>
-            <p className="text-lg md:text-xl opacity-90 mb-8">
+            <p className="text-sm md:text-lg lg:text-xl opacity-90 mb-6 md:mb-8 px-2">
               전국 응급의료기관의 실시간 병상 정보를 한눈에 확인하세요
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 max-w-3xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4"
+                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
               >
-                <Activity className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-3xl font-bold">{stats.totalHospitals}</p>
-                <p className="text-sm opacity-90">등록 병원</p>
+                <Activity className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
+                <p className="text-xl md:text-3xl font-bold">{stats.totalHospitals}</p>
+                <p className="text-xs md:text-sm opacity-90">등록 병원</p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4"
+                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
               >
-                <TrendingUp className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-3xl font-bold">{stats.totalBeds}</p>
-                <p className="text-sm opacity-90">가용 병상</p>
+                <TrendingUp className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
+                <p className="text-xl md:text-3xl font-bold">{stats.totalBeds}</p>
+                <p className="text-xs md:text-sm opacity-90">가용 병상</p>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4"
+                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
               >
-                <MapPin className="w-8 h-8 mx-auto mb-2" />
-                <p className="text-3xl font-bold">{stats.availableHospitals}</p>
-                <p className="text-sm opacity-90">병상 보유 병원</p>
+                <MapPin className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
+                <p className="text-xl md:text-3xl font-bold">{stats.availableHospitals}</p>
+                <p className="text-xs md:text-sm opacity-90">병상 보유</p>
               </motion.div>
             </div>
           </motion.div>
