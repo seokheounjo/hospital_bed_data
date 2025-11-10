@@ -1,4 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
 import { MapPin } from 'lucide-react';
 import { HospitalParsed } from '@/types/hospital';
 
@@ -20,52 +23,15 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
   const [map, setMap] = useState<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-  // 카카오맵 SDK 로드
-  useEffect(() => {
-    console.log('카카오맵 컴포넌트 마운트됨');
-    console.log('카카오맵 API 키:', KAKAO_MAP_KEY);
-    console.log('환경 변수:', process.env.NEXT_PUBLIC_KAKAO_MAP_KEY);
-
-    // 이미 로드되어 있는지 확인
+  const handleScriptLoad = () => {
+    console.log('카카오맵 스크립트 로드 완료');
     if (window.kakao && window.kakao.maps) {
-      console.log('카카오맵 SDK 이미 로드됨');
-      setIsScriptLoaded(true);
-      return;
+      window.kakao.maps.load(() => {
+        console.log('카카오맵 라이브러리 초기화 완료');
+        setIsScriptLoaded(true);
+      });
     }
-
-    // 카카오맵 API 키가 없으면 로드하지 않음
-    if (!KAKAO_MAP_KEY) {
-      console.error('카카오맵 API 키가 없습니다!');
-      return;
-    }
-
-    console.log('카카오맵 스크립트 로드 시작...');
-    const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`;
-    script.async = true;
-
-    script.onload = () => {
-      console.log('카카오맵 스크립트 로드 완료');
-      if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
-          console.log('카카오맵 라이브러리 초기화 완료');
-          setIsScriptLoaded(true);
-        });
-      } else {
-        console.error('window.kakao가 정의되지 않음');
-      }
-    };
-
-    script.onerror = (error) => {
-      console.error('카카오맵 스크립트 로드 실패:', error);
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      // 클린업: 스크립트 제거하지 않음 (재사용)
-    };
-  }, []);
+  };
 
   // 지도 초기화
   useEffect(() => {
@@ -183,15 +149,62 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-8">
-      <div className="flex items-center gap-3 mb-4">
-        <MapPin className="w-6 h-6 text-[#287dff]" />
-        <h2>병원 위치</h2>
+    <>
+      <Script
+        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
+        strategy="afterInteractive"
+        onLoad={handleScriptLoad}
+        onError={(e) => {
+          console.error('카카오맵 스크립트 로드 에러:', e);
+        }}
+      />
+      <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <MapPin className="w-6 h-6 text-[#287dff]" />
+          <h2>병원 위치</h2>
+        </div>
+        <div
+          ref={mapRef}
+          className="w-full h-96 rounded-xl overflow-hidden"
+          style={{
+            width: '100%',
+            height: '384px',
+            backgroundColor: '#f0f0f0',
+            position: 'relative'
+          }}
+        >
+          {!isScriptLoaded && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+              color: '#666'
+            }}>
+              <p>지도 로딩 중...</p>
+              <p style={{ fontSize: '12px', marginTop: '8px' }}>
+                API 키: {KAKAO_MAP_KEY.substring(0, 10)}...
+              </p>
+            </div>
+          )}
+          {isScriptLoaded && !map && (
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center',
+              color: '#666'
+            }}>
+              <p>지도 초기화 중...</p>
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 mt-3">
+          마커에 마우스를 올리면 병원명을 확인할 수 있습니다.
+        </p>
       </div>
-      <div ref={mapRef} className="w-full h-96 rounded-xl overflow-hidden" />
-      <p className="text-sm text-gray-500 mt-3">
-        마커에 마우스를 올리면 병원명을 확인할 수 있습니다.
-      </p>
-    </div>
+    </>
   );
 }
