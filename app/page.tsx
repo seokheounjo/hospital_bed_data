@@ -37,7 +37,7 @@ export default function HomePage() {
       setError(null);
       const { items } = await getRealTimeBedInfo(region.stage1, region.stage2, 100);
       const parsed = items.map(parseBedInfo);
-      // 상위 10개 병원만 위치 정보 조회
+      // 모든 병원의 위치 정보 조회
       const enriched = await enrichWithLocation(parsed);
       setHospitals(enriched);
       setFilteredHospitals(enriched);

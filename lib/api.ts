@@ -127,7 +127,7 @@ export function parseBedInfo(item: Hospital): HospitalParsed {
  * 위치 정보를 추가로 조회하여 병합
  */
 export async function enrichWithLocation(hospitals: HospitalParsed[]): Promise<HospitalParsed[]> {
-  const promises = hospitals.slice(0, 10).map(async (hospital) => {
+  const promises = hospitals.map(async (hospital) => {
     if (!hospital.위도 || !hospital.경도) {
       const location = await getHospitalLocation(hospital.기관ID);
       return {
@@ -139,8 +139,5 @@ export async function enrichWithLocation(hospitals: HospitalParsed[]): Promise<H
     return hospital;
   });
 
-  const enriched = await Promise.all(promises);
-
-  // 위치 정보가 없는 나머지 병원은 그대로 추가
-  return [...enriched, ...hospitals.slice(10)];
+  return await Promise.all(promises);
 }
