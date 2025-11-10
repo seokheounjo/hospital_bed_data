@@ -47,10 +47,13 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
     }
 
     // 새로 스크립트 추가
-    console.log('카카오맵 스크립트 추가 중...');
+    const scriptUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}`;
+    console.log('카카오맵 스크립트 추가 중...', scriptUrl);
+
     const script = document.createElement('script');
     script.type = 'text/javascript';
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}`;
+    script.src = scriptUrl;
+    script.async = false;
 
     script.onload = () => {
       console.log('카카오맵 스크립트 로드 성공!');
@@ -66,6 +69,9 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
 
     script.onerror = (error) => {
       console.error('카카오맵 스크립트 로드 실패:', error);
+      console.error('스크립트 URL:', scriptUrl);
+      console.error('API 키:', KAKAO_MAP_KEY);
+      alert('카카오맵을 불러올 수 없습니다. API 키를 확인해주세요.');
     };
 
     document.head.appendChild(script);
