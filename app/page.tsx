@@ -7,7 +7,7 @@ import { Header } from '@/components/Header';
 import { SearchBar } from '@/components/SearchBar';
 import { HospitalCard } from '@/components/HospitalCard';
 import { HospitalMap } from '@/components/HospitalMap';
-import { getRealTimeBedInfo, parseBedInfo } from '@/lib/api';
+import { getRealTimeBedInfo, parseBedInfo, enrichWithLocation } from '@/lib/api';
 import { HospitalParsed } from '@/types/hospital';
 
 export default function HomePage() {
@@ -37,8 +37,10 @@ export default function HomePage() {
       setError(null);
       const { items } = await getRealTimeBedInfo(region.stage1, region.stage2, 100);
       const parsed = items.map(parseBedInfo);
-      setHospitals(parsed);
-      setFilteredHospitals(parsed);
+      // 상위 10개 병원만 위치 정보 조회
+      const enriched = await enrichWithLocation(parsed);
+      setHospitals(enriched);
+      setFilteredHospitals(enriched);
     } catch (err) {
       console.error('데이터 로드 실패:', err);
       setError('데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
