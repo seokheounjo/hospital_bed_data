@@ -23,18 +23,56 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
   const [map, setMap] = useState<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-  // 카카오맵 SDK 체크
+  // 카카오맵 SDK 로드
   useEffect(() => {
-    const checkKakaoMaps = () => {
-      if (window.kakao && window.kakao.maps) {
-        console.log('카카오맵 SDK 사용 가능');
-        setIsScriptLoaded(true);
-      } else {
-        console.log('카카오맵 SDK 대기 중...');
-        setTimeout(checkKakaoMaps, 100);
-      }
+    // 이미 로드된 경우
+    if (window.kakao && window.kakao.maps) {
+      console.log('카카오맵 SDK 이미 로드됨');
+      setIsScriptLoaded(true);
+      return;
+    }
+
+    // 이미 스크립트가 추가되었는지 확인
+    const existingScript = document.querySelector('script[src*="dapi.kakao.com"]');
+    if (existingScript) {
+      console.log('카카오맵 스크립트 태그 발견, 로드 대기 중...');
+      const checkInterval = setInterval(() => {
+        if (window.kakao && window.kakao.maps) {
+          console.log('카카오맵 SDK 로드 완료!');
+          setIsScriptLoaded(true);
+          clearInterval(checkInterval);
+        }
+      }, 100);
+      return () => clearInterval(checkInterval);
+    }
+
+    // 새로 스크립트 추가
+    console.log('카카오맵 스크립트 추가 중...');
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}`;
+
+    script.onload = () => {
+      console.log('카카오맵 스크립트 로드 성공!');
+      // kakao.maps가 정의될 때까지 대기
+      const checkInterval = setInterval(() => {
+        if (window.kakao && window.kakao.maps) {
+          console.log('카카오맵 SDK 준비 완료!');
+          setIsScriptLoaded(true);
+          clearInterval(checkInterval);
+        }
+      }, 50);
     };
-    checkKakaoMaps();
+
+    script.onerror = (error) => {
+      console.error('카카오맵 스크립트 로드 실패:', error);
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      // 클린업하지 않음 - 스크립트 재사용
+    };
   }, []);
 
   // 지도 초기화

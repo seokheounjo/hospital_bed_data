@@ -16,10 +16,6 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="antialiased">
-        <Script
-          src="//dapi.kakao.com/v2/maps/sdk.js?appkey=ca6753f95409db0f45755c0085d293f5"
-          strategy="afterInteractive"
-        />
         {children}
       </body>
     </html>
