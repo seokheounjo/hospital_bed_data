@@ -23,15 +23,19 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
   const [map, setMap] = useState<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-  const handleScriptLoad = () => {
-    console.log('카카오맵 스크립트 로드 완료');
-    if (window.kakao && window.kakao.maps) {
-      window.kakao.maps.load(() => {
-        console.log('카카오맵 라이브러리 초기화 완료');
+  // 카카오맵 SDK 체크
+  useEffect(() => {
+    const checkKakaoMaps = () => {
+      if (window.kakao && window.kakao.maps) {
+        console.log('카카오맵 SDK 사용 가능');
         setIsScriptLoaded(true);
-      });
-    }
-  };
+      } else {
+        console.log('카카오맵 SDK 대기 중...');
+        setTimeout(checkKakaoMaps, 100);
+      }
+    };
+    checkKakaoMaps();
+  }, []);
 
   // 지도 초기화
   useEffect(() => {
@@ -149,15 +153,6 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
   }
 
   return (
-    <>
-      <Script
-        src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`}
-        strategy="afterInteractive"
-        onLoad={handleScriptLoad}
-        onError={(e) => {
-          console.error('카카오맵 스크립트 로드 에러:', e);
-        }}
-      />
       <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-8">
         <div className="flex items-center gap-3 mb-4">
           <MapPin className="w-6 h-6 text-[#287dff]" />
@@ -205,6 +200,5 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
           마커에 마우스를 올리면 병원명을 확인할 수 있습니다.
         </p>
       </div>
-    </>
   );
 }
