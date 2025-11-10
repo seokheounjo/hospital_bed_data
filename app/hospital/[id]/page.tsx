@@ -41,7 +41,7 @@ export default function HospitalDetailPage({ params }: { params: Promise<{ id: s
       const parsed = items.map(parseBedInfo);
 
       // Find hospital by ID
-      const found = parsed.find((h) => h.기관ID === resolvedParams.id);
+      const found = parsed.find((h: HospitalParsed) => h.기관ID === resolvedParams.id);
       setHospital(found || null);
     } catch (err) {
       console.error('Failed to load hospital:', err);
