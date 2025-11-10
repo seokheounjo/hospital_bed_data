@@ -14,6 +14,8 @@ declare global {
   }
 }
 
+const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY || '';
+
 export default function HospitalMap({ hospitals }: HospitalMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
@@ -21,8 +23,17 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
 
   // 카카오맵 스크립트 로드
   useEffect(() => {
+    if (window.kakao && window.kakao.maps) {
+      setIsScriptLoaded(true);
+      return;
+    }
+
+    if (!KAKAO_MAP_KEY) {
+      return;
+    }
+
     const script = document.createElement('script');
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_MAP_API_KEY&autoload=false`;
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_KEY}&autoload=false`;
     script.async = true;
 
     script.onload = () => {
@@ -34,7 +45,9 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
     document.head.appendChild(script);
 
     return () => {
-      document.head.removeChild(script);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 

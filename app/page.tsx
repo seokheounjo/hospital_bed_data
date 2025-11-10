@@ -1,32 +1,67 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Activity,
-  TrendingUp,
-  MapPin,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
+import { motion } from 'motion/react';
+import { Activity, TrendingUp, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import SearchBar from '@/components/SearchBar';
 import HospitalCard from '@/components/HospitalCard';
 import HospitalMap from '@/components/HospitalMap';
-import { Hospital, HospitalParsed } from '@/types/hospital';
+import { HospitalParsed } from '@/types/hospital';
 import { parseBedInfo } from '@/lib/api';
 
 export default function Home() {
   const [hospitals, setHospitals] = useState<HospitalParsed[]>([]);
-  const [filteredHospitals, setFilteredHospitals] = useState<HospitalParsed[]>(
-    []
-  );
+  const [filteredHospitals, setFilteredHospitals] = useState<HospitalParsed[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [region, setRegion] = useState({ stage1: '', stage2: '' });
 
-  // 데이터 로드
+  // 통계 계산
+  const stats = {
+    totalHospitals: filteredHospitals.length,
+    totalBeds: filteredHospitals.reduce(
+      (sum, h) => sum + h.응급실_일반 + h.응급실_소아 + h.응급실_야간,
+      0
+    ),
+    hospitalsWithBeds: filteredHospitals.filter(
+      (h) => h.응급실_일반 + h.응급실_소아 + h.응급실_야간 > 0
+    ).length,
+  };
+
+  // 데이터 불러오기
+  const fetchHospitals = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const params = new URLSearchParams({
+        stage1: region.stage1,
+        stage2: region.stage2,
+        numOfRows: '100',
+      });
+
+      const response = await fetch(`/api/beds?${params}`);
+
+      if (!response.ok) {
+        throw new Error('데이터를 불러오는데 실패했습니다.');
+      }
+
+      const data = await response.json();
+      const items = Array.isArray(data.items.item) ? data.items.item : [data.items.item];
+      const parsed = items.map(parseBedInfo);
+
+      setHospitals(parsed);
+      setFilteredHospitals(parsed);
+    } catch (err) {
+      console.error('데이터 로드 실패:', err);
+      setError('데이터를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchHospitals();
   }, [region]);
@@ -44,196 +79,127 @@ export default function Home() {
     setFilteredHospitals(filtered);
   }, [searchQuery, hospitals]);
 
-  const fetchHospitals = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams({
-        stage1: region.stage1,
-        stage2: region.stage2,
-        numOfRows: '50',
-      });
-
-      const response = await fetch(`/api/beds?${params}`);
-
-      if (!response.ok) {
-        throw new Error('데이터를 불러오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      const items = Array.isArray(data.items.item)
-        ? data.items.item
-        : [data.items.item];
-
-      const parsed = items.map((item: Hospital) => parseBedInfo(item));
-      setHospitals(parsed);
-      setFilteredHospitals(parsed);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 통계 계산
-  const stats = {
-    totalHospitals: filteredHospitals.length,
-    totalBeds: filteredHospitals.reduce(
-      (sum, h) =>
-        sum + Number(h.응급실_일반) + Number(h.응급실_소아) + Number(h.응급실_야간),
-      0
-    ),
-    availableHospitals: filteredHospitals.filter(
-      (h) =>
-        Number(h.응급실_일반) + Number(h.응급실_소아) + Number(h.응급실_야간) > 0
-    ).length,
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-20 md:pt-24 pb-10 md:pb-12 bg-gradient-to-br from-[#287dff] to-[#417dff]">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-r from-[#287dff] to-[#417dff] text-white pt-20 md:pt-24 pb-12 md:pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center text-white"
+            transition={{ duration: 0.5 }}
+            className="text-center mb-8 md:mb-12"
           >
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 px-2">
+            <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
               실시간 응급실 병상 현황
             </h1>
-            <p className="text-sm md:text-lg lg:text-xl opacity-90 mb-6 md:mb-8 px-2">
+            <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto">
               전국 응급의료기관의 실시간 병상 정보를 한눈에 확인하세요
             </p>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 max-w-3xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
-              >
-                <Activity className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
-                <p className="text-xl md:text-3xl font-bold">{stats.totalHospitals}</p>
-                <p className="text-xs md:text-sm opacity-90">등록 병원</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
-              >
-                <TrendingUp className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
-                <p className="text-xl md:text-3xl font-bold">{stats.totalBeds}</p>
-                <p className="text-xs md:text-sm opacity-90">가용 병상</p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4"
-              >
-                <MapPin className="w-5 h-5 md:w-8 md:h-8 mx-auto mb-1 md:mb-2" />
-                <p className="text-xl md:text-3xl font-bold">{stats.availableHospitals}</p>
-                <p className="text-xs md:text-sm opacity-90">병상 보유</p>
-              </motion.div>
-            </div>
           </motion.div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+            >
+              <Activity className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
+              <div className="text-xl md:text-3xl font-bold mb-1">{stats.totalHospitals}</div>
+              <div className="text-xs md:text-sm text-white/80">등록 병원</div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+            >
+              <TrendingUp className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
+              <div className="text-xl md:text-3xl font-bold mb-1">{stats.totalBeds}</div>
+              <div className="text-xs md:text-sm text-white/80">가용 병상</div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+            >
+              <MapPin className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
+              <div className="text-xl md:text-3xl font-bold mb-1">{stats.hospitalsWithBeds}</div>
+              <div className="text-xs md:text-sm text-white/80">병상 보유</div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Bar */}
-        <SearchBar
-          onSearch={setSearchQuery}
-          onRegionChange={(stage1, stage2) => setRegion({ stage1, stage2 })}
-        />
+        <div className="mb-8">
+          <SearchBar
+            onSearch={setSearchQuery}
+            onRegionChange={(stage1, stage2) => setRegion({ stage1, stage2 })}
+          />
+        </div>
 
         {/* Map */}
-        <div className="mb-8">
-          <HospitalMap hospitals={filteredHospitals} />
-        </div>
+        <HospitalMap hospitals={filteredHospitals} />
 
         {/* Hospital List */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-[#242424] mb-4">
-            응급의료기관 목록
+        <div>
+          <h2 className="text-2xl font-bold text-[#242424] mb-6">
+            병원 목록
+            <span className="text-[#287dff] ml-2">({filteredHospitals.length})</span>
           </h2>
-          {region.stage1 && (
-            <p className="text-gray-600 mb-4">
-              {region.stage1} {region.stage2} 지역 검색 결과
-            </p>
-          )}
-        </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Loader2 className="w-12 h-12 text-[#287dff] animate-spin mx-auto mb-4" />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 text-[#287dff] animate-spin mb-4" />
               <p className="text-gray-600">데이터를 불러오는 중...</p>
             </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
-            <div className="flex items-center gap-3 text-red-600">
-              <AlertCircle className="w-6 h-6" />
-              <div>
-                <h3 className="font-bold mb-1">오류가 발생했습니다</h3>
-                <p className="text-sm">{error}</p>
-              </div>
+          ) : error ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-red-800 mb-2">오류가 발생했습니다</h3>
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={fetchHospitals}
+                className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                다시 시도
+              </button>
             </div>
-          </div>
-        )}
-
-        {/* Hospital Cards */}
-        {!loading && !error && (
-          <>
-            {filteredHospitals.length === 0 ? (
-              <div className="text-center py-20">
-                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  검색 결과가 없습니다. 다른 조건으로 검색해보세요.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredHospitals.map((hospital, index) => (
-                  <HospitalCard
-                    key={hospital.기관ID}
-                    hospital={hospital}
-                    index={index}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+          ) : filteredHospitals.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-12 text-center">
+              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-gray-700 mb-2">검색 결과가 없습니다</h3>
+              <p className="text-gray-500">다른 조건으로 검색해보세요.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {filteredHospitals.map((hospital, index) => (
+                <HospitalCard key={hospital.기관ID} hospital={hospital} index={index} />
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600">
-            <p className="mb-2">
-              데이터 제공: 국립중앙의료원 (공공데이터포털)
-            </p>
-            <p className="text-sm text-gray-500">
-              실시간 응급실 병상 현황 서비스 | Made with Next.js
-            </p>
-          </div>
+      <footer className="bg-white border-t mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+          <p className="text-sm">
+            데이터 출처: 국립중앙의료원 (공공데이터포털)
+          </p>
+          <p className="text-sm mt-2">
+            © 2025 응급실 병상 찾기. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
