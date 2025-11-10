@@ -38,41 +38,42 @@ export default function HomePage() {
       const { items } = await getRealTimeBedInfo(region.stage1, region.stage2, 100);
       const parsed = items.map(parseBedInfo);
 
-      // 먼저 병원 목록 표시
+      // 병원 목록 표시
       setHospitals(parsed);
       setFilteredHospitals(parsed);
       setLoading(false);
 
-      // 백그라운드에서 위치 정보 점진적으로 가져오기 (처음 30개만)
-      const hospitalsToEnrich = parsed.slice(0, 30);
-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      // 지역이 선택된 경우에만 위치 정보 가져오기
+      if (region.stage1 || region.stage2) {
+        const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-      for (let i = 0; i < hospitalsToEnrich.length; i++) {
-        const hospital = hospitalsToEnrich[i];
+        for (let i = 0; i < parsed.length; i++) {
+          const hospital = parsed[i];
 
-        if (!hospital.위도 || !hospital.경도) {
-          const location = await searchHospitalLocation(hospital.병원명);
+          if (!hospital.위도 || !hospital.경도) {
+            const location = await searchHospitalLocation(hospital.병원명);
 
-          if (location) {
-            // 위치 정보를 가진 병원으로 업데이트
-            setHospitals((prev) =>
-              prev.map((h) =>
-                h.기관ID === hospital.기관ID
-                  ? { ...h, 위도: location.lat, 경도: location.lon }
-                  : h
-              )
-            );
-            setFilteredHospitals((prev) =>
-              prev.map((h) =>
-                h.기관ID === hospital.기관ID
-                  ? { ...h, 위도: location.lat, 경도: location.lon }
-                  : h
-              )
-            );
+            if (location) {
+              // 위치 정보를 가진 병원으로 업데이트
+              setHospitals((prev) =>
+                prev.map((h) =>
+                  h.기관ID === hospital.기관ID
+                    ? { ...h, 위도: location.lat, 경도: location.lon }
+                    : h
+                )
+              );
+              setFilteredHospitals((prev) =>
+                prev.map((h) =>
+                  h.기관ID === hospital.기관ID
+                    ? { ...h, 위도: location.lat, 경도: location.lon }
+                    : h
+                )
+              );
+            }
+
+            // Rate limiting: 500ms 딜레이
+            await delay(500);
           }
-
-          // Rate limiting: 500ms 딜레이
-          await delay(500);
         }
       }
     } catch (err) {
