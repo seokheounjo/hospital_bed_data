@@ -13,7 +13,7 @@ declare global {
 }
 
 // 카카오맵 API 키
-const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY || '';
+const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY || 'ca6753f95409db0f45755c0085d293f5';
 
 export function HospitalMap({ hospitals }: HospitalMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -22,6 +22,9 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
 
   // 카카오맵 SDK 로드
   useEffect(() => {
+    console.log('카카오맵 API 키:', KAKAO_MAP_KEY);
+    console.log('환경 변수:', process.env.NEXT_PUBLIC_KAKAO_MAP_KEY);
+
     // 이미 로드되어 있는지 확인
     if (window.kakao && window.kakao.maps) {
       setIsScriptLoaded(true);
@@ -30,6 +33,7 @@ export function HospitalMap({ hospitals }: HospitalMapProps) {
 
     // 카카오맵 API 키가 없으면 로드하지 않음
     if (!KAKAO_MAP_KEY) {
+      console.error('카카오맵 API 키가 없습니다!');
       return;
     }
 
