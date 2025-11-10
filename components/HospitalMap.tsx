@@ -1,8 +1,6 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
-import { HospitalParsed } from '@/types/hospital';
 import { MapPin } from 'lucide-react';
+import { HospitalParsed } from '@/types/hospital';
 
 interface HospitalMapProps {
   hospitals: HospitalParsed[];
@@ -14,20 +12,23 @@ declare global {
   }
 }
 
+// 카카오맵 API 키
 const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY || '';
 
-export default function HospitalMap({ hospitals }: HospitalMapProps) {
+export function HospitalMap({ hospitals }: HospitalMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
-  // 카카오맵 스크립트 로드
+  // 카카오맵 SDK 로드
   useEffect(() => {
+    // 이미 로드되어 있는지 확인
     if (window.kakao && window.kakao.maps) {
       setIsScriptLoaded(true);
       return;
     }
 
+    // 카카오맵 API 키가 없으면 로드하지 않음
     if (!KAKAO_MAP_KEY) {
       return;
     }
@@ -45,6 +46,7 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
     document.head.appendChild(script);
 
     return () => {
+      // 클린업: 스크립트 제거
       if (script.parentNode) {
         script.parentNode.removeChild(script);
       }
@@ -53,26 +55,29 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
 
   // 지도 초기화
   useEffect(() => {
-    if (!isScriptLoaded || !mapRef.current) return;
+    if (!isScriptLoaded || !mapRef.current || map) return;
 
-    const container = mapRef.current;
     const options = {
       center: new window.kakao.maps.LatLng(37.5665, 126.978), // 서울 시청
       level: 8,
     };
 
-    const kakaoMap = new window.kakao.maps.Map(container, options);
+    const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
     setMap(kakaoMap);
-  }, [isScriptLoaded]);
+  }, [isScriptLoaded, map]);
 
-  // 병원 마커 추가 (위도/경도 데이터가 있을 때)
+  // 병원 마커 추가
   useEffect(() => {
     if (!map || hospitals.length === 0) return;
 
-    // 기존 마커 제거 로직은 생략 (실제 구현시 추가)
+    // 기존 마커 제거는 생략 (간단한 구현)
+    
+    const bounds = new window.kakao.maps.LatLngBounds();
+    let hasValidLocation = false;
 
     hospitals.forEach((hospital) => {
       if (hospital.위도 && hospital.경도) {
+        hasValidLocation = true;
         const markerPosition = new window.kakao.maps.LatLng(
           hospital.위도,
           hospital.경도
@@ -85,9 +90,10 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
 
         // 인포윈도우
         const infowindow = new window.kakao.maps.InfoWindow({
-          content: `<div style="padding:5px;font-size:12px;">${hospital.병원명}</div>`,
+          content: `<div style="padding:8px 12px;font-size:14px;white-space:nowrap;">${hospital.병원명}</div>`,
         });
 
+        // 마커 이벤트
         window.kakao.maps.event.addListener(marker, 'mouseover', () => {
           infowindow.open(map, marker);
         });
@@ -95,44 +101,47 @@ export default function HospitalMap({ hospitals }: HospitalMapProps) {
         window.kakao.maps.event.addListener(marker, 'mouseout', () => {
           infowindow.close();
         });
+
+        bounds.extend(markerPosition);
       }
     });
+
+    // 모든 마커가 보이도록 지도 범위 조정
+    if (hasValidLocation) {
+      map.setBounds(bounds);
+    }
   }, [map, hospitals]);
 
+  // 카카오맵 API 키가 없을 때 표시
+  if (!KAKAO_MAP_KEY) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <MapPin className="w-6 h-6 text-[#287dff]" />
+          <h2>병원 위치</h2>
+        </div>
+        <div className="bg-gray-100 rounded-xl h-96 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <MapPin className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+            <p>카카오맵 API 키를 설정하면</p>
+            <p>병원 위치를 지도에서 확인할 수 있습니다.</p>
+            <p className="text-sm mt-2">(환경 변수: KAKAO_MAP_KEY)</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-      <div className="bg-gradient-to-r from-[#287dff] to-[#417dff] p-4">
-        <div className="flex items-center gap-2 text-white">
-          <MapPin className="w-5 h-5" />
-          <h2 className="text-lg font-bold">응급실 위치</h2>
-        </div>
+    <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 mb-8">
+      <div className="flex items-center gap-3 mb-4">
+        <MapPin className="w-6 h-6 text-[#287dff]" />
+        <h2>병원 위치</h2>
       </div>
-
-      {/* 임시 지도 영역 (카카오맵 API 키 필요) */}
-      <div className="relative">
-        <div
-          ref={mapRef}
-          className="w-full h-[400px] bg-gray-100 flex items-center justify-center"
-        >
-          {!isScriptLoaded && (
-            <div className="text-center">
-              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">지도를 불러오는 중...</p>
-              <p className="text-sm text-gray-400 mt-2">
-                카카오맵 API 키가 필요합니다
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 지도 안내 */}
-      <div className="p-4 bg-[#eff6ff] border-t border-gray-200">
-        <p className="text-sm text-gray-600">
-          💡 <span className="font-semibold">참고:</span> 실제 지도 기능을 사용하려면
-          카카오맵 API 키를 설정해주세요.
-        </p>
-      </div>
+      <div ref={mapRef} className="w-full h-96 rounded-xl overflow-hidden" />
+      <p className="text-sm text-gray-500 mt-3">
+        마커에 마우스를 올리면 병원명을 확인할 수 있습니다.
+      </p>
     </div>
   );
 }

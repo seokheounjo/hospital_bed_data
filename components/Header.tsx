@@ -1,32 +1,23 @@
-'use client';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Heart, Menu, X, Activity, Search, User, Settings } from 'lucide-react';
-import ComingSoonModal from './ComingSoonModal';
+import { ComingSoonModal } from '@/components/ComingSoonModal';
 
-export default function Header() {
-  const router = useRouter();
+export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [comingSoonFeature, setComingSoonFeature] = useState('');
 
-  const handleFeatureClick = (feature: string, path?: string) => {
-    if (path) {
-      router.push(path);
-      setMobileMenuOpen(false);
-    } else {
-      setComingSoonFeature(feature);
-      setShowComingSoon(true);
-      setMobileMenuOpen(false);
-    }
+  const handleFeatureClick = (feature: string) => {
+    setComingSoonFeature(feature);
+    setShowComingSoon(true);
+    setMobileMenuOpen(false);
   };
 
   const navItems = [
-    { name: '실시간 병상', icon: Activity, href: '/', active: true },
-    { name: '병원 검색', icon: Search, href: '/search' },
-    { name: '내 정보', icon: User, href: '/profile' },
-    { name: '설정', icon: Settings, href: '/settings' },
+    { name: '실시간 병상', icon: Activity, href: '#', active: true },
+    { name: '병원 검색', icon: Search, href: '#', comingSoon: true },
+    { name: '내 정보', icon: User, href: '#', comingSoon: true },
+    { name: '설정', icon: Settings, href: '#', comingSoon: true },
   ];
 
   return (
@@ -35,12 +26,9 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
             {/* Logo */}
-            <div
-              className="flex items-center gap-2 cursor-pointer"
-              onClick={() => router.push('/')}
-            >
+            <div className="flex items-center gap-2">
               <Heart className="w-6 h-6 md:w-8 md:h-8 text-[#287dff] fill-[#287dff]" />
-              <span className="text-lg md:text-xl font-bold text-[#242424]">
+              <span className="text-lg md:text-xl text-[#242424]">
                 <span className="hidden sm:inline">응급실 </span>병상찾기
               </span>
             </div>
@@ -50,7 +38,7 @@ export default function Header() {
               {navItems.map((item) => (
                 <button
                   key={item.name}
-                  onClick={() => handleFeatureClick(item.name, item.href)}
+                  onClick={() => item.comingSoon && handleFeatureClick(item.name)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                     item.active
                       ? 'bg-blue-50 text-[#287dff]'
@@ -58,15 +46,15 @@ export default function Header() {
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
-                  <span className="text-sm">{item.name}</span>
+                  <span>{item.name}</span>
                 </button>
               ))}
             </nav>
 
             {/* Login Button (Desktop) */}
             <button
-              onClick={() => router.push('/login')}
-              className="hidden lg:block px-4 py-2 bg-[#287dff] text-white text-sm rounded-lg hover:bg-[#417dff] transition-colors"
+              onClick={() => handleFeatureClick('로그인')}
+              className="hidden lg:block px-4 py-2 bg-[#287dff] text-white rounded-lg hover:bg-[#417dff] transition-colors"
             >
               로그인
             </button>
@@ -87,7 +75,7 @@ export default function Header() {
                 {navItems.map((item) => (
                   <button
                     key={item.name}
-                    onClick={() => handleFeatureClick(item.name, item.href)}
+                    onClick={() => item.comingSoon && handleFeatureClick(item.name)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                       item.active
                         ? 'bg-blue-50 text-[#287dff]'
@@ -99,7 +87,7 @@ export default function Header() {
                   </button>
                 ))}
                 <button
-                  onClick={() => router.push('/login')}
+                  onClick={() => handleFeatureClick('로그인')}
                   className="mt-2 px-4 py-3 bg-[#287dff] text-white rounded-lg hover:bg-[#417dff] transition-colors"
                 >
                   로그인

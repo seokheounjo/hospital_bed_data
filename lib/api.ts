@@ -1,17 +1,21 @@
 import axios from 'axios';
-import { Hospital, HospitalParsed } from '@/types/hospital';
+import { Hospital, HospitalParsed, ApiResponse } from '@/types/hospital';
 
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '55361887939f3c9a75d709afcd988d6ede40ae2bfad558f8899f4fcb830d61e3';
 const BASE_URL = 'https://apis.data.go.kr/B552657/ErmctInfoInqireService';
 
+/**
+ * 실시간 응급실 병상 정보 조회
+ */
 export async function getRealTimeBedInfo(
   stage1: string = '',
   stage2: string = '',
-  numOfRows: number = 50
-) {
+  numOfRows: number = 100
+): Promise<{ items: Hospital[]; totalCount: number }> {
+  const url = `${BASE_URL}/getEmrrmRltmUsefulSckbdInfoInqire`;
+
   try {
-    const url = `${BASE_URL}/getEmrrmRltmUsefulSckbdInfoInqire`;
-    const response = await axios.get(url, {
+    const response = await axios.get<ApiResponse>(url, {
       params: {
         serviceKey: API_KEY,
         STAGE1: stage1,
@@ -19,15 +23,19 @@ export async function getRealTimeBedInfo(
         pageNo: 1,
         numOfRows: numOfRows,
       },
-      paramsSerializer: (params) => {
-        return Object.entries(params)
-          .map(([key, value]) => `${key}=${value}`)
-          .join('&');
-      },
     });
 
     if (response.data.response.header.resultCode === '00') {
-      return response.data.response.body;
+      const body = response.data.response.body;
+      const items = body.items.item;
+
+      // item이 배열인지 단일 객체인지 확인
+      const itemsArray = Array.isArray(items) ? items : [items];
+
+      return {
+        items: itemsArray,
+        totalCount: body.totalCount,
+      };
     } else {
       throw new Error(response.data.response.header.resultMsg);
     }
@@ -37,6 +45,9 @@ export async function getRealTimeBedInfo(
   }
 }
 
+/**
+ * 병원 데이터 파싱 (API 응답 → UI용 데이터)
+ */
 export function parseBedInfo(item: Hospital): HospitalParsed {
   return {
     병원명: item.dutyName || 'N/A',
@@ -45,24 +56,22 @@ export function parseBedInfo(item: Hospital): HospitalParsed {
     응급실_일반: item.hv1 || 0,
     응급실_소아: item.hv2 || 0,
     응급실_야간: item.hv3 || 0,
-    수술실_일반: item.hv4 || 0,
-    수술실_신경외과: item.hv5 || 'N/A',
-    수술실_심장혈관외과: item.hv6 || 0,
-    수술실_흉부외과: item.hv7 || 'N/A',
-    신경중환자실: item.hv10 || 'N/A',
-    신생중환자실: item.hv11 || 'N/A',
-    흉부중환자실: item.hv12 || 'N/A',
-    일반중환자실: item.hv13 || 'N/A',
-    입원실: item.hv17 || 0,
-    소아입원실: item.hv18 || 0,
-    응급실_병상수: item.hvec || 0,
-    입원실_병상수: item.hvcc || 0,
-    수술실_병상수: item.hvoc || 0,
-    CT가용: item.hvctayn || 'N/A',
-    MRI가용: item.hvmriayn || 'N/A',
-    인공호흡기: item.hv28 || 0,
-    조영제촬영기: item.hv29 || 0,
-    구급차가용: item.hv30 || 0,
+    응급실_총병상: item.hvec || 0,
+    응급실_사용중: item.hvoc || 0,
+    중환자실_신경: item.hvs01 || 0,
+    중환자실_신경_사용중: item.hvs02 || 0,
+    중환자실_신생아: item.hvs03 || 0,
+    중환자실_신생아_사용중: item.hvs04 || 0,
+    중환자실_흉부외과: item.hvs05 || 0,
+    중환자실_흉부외과_사용중: item.hvs06 || 0,
+    중환자실_일반: item.hvs07 || 0,
+    중환자실_일반_사용중: item.hvs08 || 0,
+    CT_가능: item.hvctayn || 'N',
+    MRI_가능: item.hvmriayn || 'N',
+    인공호흡기_가능: item.hvventiayn || 'N',
+    인공호흡기_격리_가능: item.hvventisoayn || 'N',
+    인큐베이터_가능: item.hvincuayn || 'N',
+    구급차_가용: item.hvamyn || 'N',
     위도: item.wgs84Lat,
     경도: item.wgs84Lon,
   };

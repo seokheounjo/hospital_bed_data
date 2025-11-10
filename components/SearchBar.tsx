@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { Search, MapPin, Filter, X } from 'lucide-react';
 
@@ -28,7 +26,7 @@ const regions: Record<string, string[]> = {
   제주특별자치도: ['제주시', '서귀포시'],
 };
 
-export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) {
+export function SearchBar({ onSearch, onRegionChange }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStage1, setSelectedStage1] = useState('');
   const [selectedStage2, setSelectedStage2] = useState('');
@@ -60,7 +58,7 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
   const hasActiveFilters = selectedStage1 || selectedStage2 || searchQuery;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6 border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6">
       {/* Search Input */}
       <form onSubmit={handleSearchSubmit} className="mb-4">
         <div className="relative">
@@ -85,18 +83,13 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
             onChange={(e) => handleStage1Change(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#287dff] focus:border-transparent outline-none transition-all appearance-none bg-white cursor-pointer"
           >
-            <option value="">전체 지역</option>
+            <option value="">시/도 선택</option>
             {Object.keys(regions).map((region) => (
               <option key={region} value={region}>
                 {region}
               </option>
             ))}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
         </div>
 
         {/* Stage 2 (시/군/구) */}
@@ -108,7 +101,7 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
             disabled={!selectedStage1 || regions[selectedStage1]?.length === 0}
             className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#287dff] focus:border-transparent outline-none transition-all appearance-none bg-white cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
-            <option value="">전체 구/시</option>
+            <option value="">시/군/구 선택</option>
             {selectedStage1 &&
               regions[selectedStage1]?.map((district) => (
                 <option key={district} value={district}>
@@ -116,11 +109,6 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
                 </option>
               ))}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
         </div>
       </div>
 
@@ -129,23 +117,23 @@ export default function SearchBar({ onSearch, onRegionChange }: SearchBarProps) 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-600">선택된 필터:</span>
           {selectedStage1 && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm font-medium">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm">
               {selectedStage1}
             </span>
           )}
           {selectedStage2 && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm font-medium">
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm">
               {selectedStage2}
             </span>
           )}
           {searchQuery && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm font-medium">
-              "{searchQuery}"
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-[#287dff] rounded-full text-sm">
+              &quot;{searchQuery}&quot;
             </span>
           )}
           <button
             onClick={handleReset}
-            className="inline-flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors font-medium ml-auto"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
             <X className="w-4 h-4" />
             초기화

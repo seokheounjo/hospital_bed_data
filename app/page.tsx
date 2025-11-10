@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Activity, TrendingUp, MapPin, Loader2, AlertCircle } from 'lucide-react';
-import Header from '@/components/Header';
-import SearchBar from '@/components/SearchBar';
-import HospitalCard from '@/components/HospitalCard';
-import HospitalMap from '@/components/HospitalMap';
+import { Header } from '@/components/Header';
+import { SearchBar } from '@/components/SearchBar';
+import { HospitalCard } from '@/components/HospitalCard';
+import { HospitalMap } from '@/components/HospitalMap';
+import { getRealTimeBedInfo, parseBedInfo } from '@/lib/api';
 import { HospitalParsed } from '@/types/hospital';
-import { parseBedInfo } from '@/lib/api';
 
-export default function Home() {
+export default function HomePage() {
   const [hospitals, setHospitals] = useState<HospitalParsed[]>([]);
   const [filteredHospitals, setFilteredHospitals] = useState<HospitalParsed[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,23 +35,8 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
-
-      const params = new URLSearchParams({
-        stage1: region.stage1,
-        stage2: region.stage2,
-        numOfRows: '100',
-      });
-
-      const response = await fetch(`/api/beds?${params}`);
-
-      if (!response.ok) {
-        throw new Error('데이터를 불러오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      const items = Array.isArray(data.items.item) ? data.items.item : [data.items.item];
+      const { items } = await getRealTimeBedInfo(region.stage1, region.stage2, 100);
       const parsed = items.map(parseBedInfo);
-
       setHospitals(parsed);
       setFilteredHospitals(parsed);
     } catch (err) {
@@ -92,9 +77,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="text-center mb-8 md:mb-12"
           >
-            <h1 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-              실시간 응급실 병상 현황
-            </h1>
+            <h1 className="mb-3 md:mb-4">실시간 응급실 병상 현황</h1>
             <p className="text-base md:text-lg text-white/90 max-w-2xl mx-auto">
               전국 응급의료기관의 실시간 병상 정보를 한눈에 확인하세요
             </p>
@@ -106,10 +89,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4"
             >
               <Activity className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
-              <div className="text-xl md:text-3xl font-bold mb-1">{stats.totalHospitals}</div>
+              <div className="text-xl md:text-3xl mb-1">{stats.totalHospitals}</div>
               <div className="text-xs md:text-sm text-white/80">등록 병원</div>
             </motion.div>
 
@@ -117,10 +100,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4"
             >
               <TrendingUp className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
-              <div className="text-xl md:text-3xl font-bold mb-1">{stats.totalBeds}</div>
+              <div className="text-xl md:text-3xl mb-1">{stats.totalBeds}</div>
               <div className="text-xs md:text-sm text-white/80">가용 병상</div>
             </motion.div>
 
@@ -128,10 +111,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4 text-center"
+              className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4"
             >
               <MapPin className="w-6 h-6 md:w-8 md:h-8 mb-2 mx-auto" />
-              <div className="text-xl md:text-3xl font-bold mb-1">{stats.hospitalsWithBeds}</div>
+              <div className="text-xl md:text-3xl mb-1">{stats.hospitalsWithBeds}</div>
               <div className="text-xs md:text-sm text-white/80">병상 보유</div>
             </motion.div>
           </div>
@@ -153,7 +136,7 @@ export default function Home() {
 
         {/* Hospital List */}
         <div>
-          <h2 className="text-2xl font-bold text-[#242424] mb-6">
+          <h2 className="mb-6">
             병원 목록
             <span className="text-[#287dff] ml-2">({filteredHospitals.length})</span>
           </h2>
@@ -166,7 +149,7 @@ export default function Home() {
           ) : error ? (
             <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
               <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-red-800 mb-2">오류가 발생했습니다</h3>
+              <h3 className="text-red-800 mb-2">오류가 발생했습니다</h3>
               <p className="text-red-600 mb-4">{error}</p>
               <button
                 onClick={fetchHospitals}
@@ -178,7 +161,7 @@ export default function Home() {
           ) : filteredHospitals.length === 0 ? (
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-12 text-center">
               <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-gray-700 mb-2">검색 결과가 없습니다</h3>
+              <h3 className="text-gray-700 mb-2">검색 결과가 없습니다</h3>
               <p className="text-gray-500">다른 조건으로 검색해보세요.</p>
             </div>
           ) : (
