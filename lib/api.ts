@@ -89,3 +89,60 @@ export function parseBedInfo(item: Hospital): HospitalParsed {
     경도: item.wgs84Lon,
   };
 }
+
+/**
+ * 카카오 로컬 API를 사용하여 병원 위치 검색
+ */
+export async function searchHospitalLocation(hospitalName: string): Promise<{
+  lat: number;
+  lon: number;
+} | null> {
+  try {
+    const response = await fetch(
+      `/api/hospital-location?name=${encodeURIComponent(hospitalName)}`
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        lat: data.lat,
+        lon: data.lon,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('위치 검색 실패:', hospitalName, error);
+    return null;
+  }
+}
+
+/**
+ * 여러 병원의 위치를 순차적으로 검색 (rate limiting 포함)
+ */
+export async function enrichHospitalsWithLocation(
+  hospitals: HospitalParsed[]
+): Promise<HospitalParsed[]> {
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const results: HospitalParsed[] = [];
+
+  for (const hospital of hospitals) {
+    if (!hospital.위도 || !hospital.경도) {
+      const location = await searchHospitalLocation(hospital.병원명);
+      if (location) {
+        results.push({
+          ...hospital,
+          위도: location.lat,
+          경도: location.lon,
+        });
+      } else {
+        results.push(hospital);
+      }
+      // Rate limiting: 500ms 딜레이
+      await delay(500);
+    } else {
+      results.push(hospital);
+    }
+  }
+
+  return results;
+}
