@@ -85,11 +85,11 @@ export default function HospitalCard({ hospital, index }: HospitalCardProps) {
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600">신경</span>
-                <span className="font-semibold text-[#287dff] truncate">{hospital.중환자실_신경}</span>
+                <span className="font-semibold text-[#287dff] truncate">{hospital.신경중환자실}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">일반</span>
-                <span className="font-semibold text-[#287dff] truncate">{hospital.중환자실_일반}</span>
+                <span className="font-semibold text-[#287dff] truncate">{hospital.일반중환자실}</span>
               </div>
             </div>
           </div>
@@ -103,14 +103,14 @@ export default function HospitalCard({ hospital, index }: HospitalCardProps) {
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600">CT/MRI</span>
-                <span className={hospital.CT_가능 === 'Y' ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
-                  {hospital.CT_가능 === 'Y' ? '가능' : '불가'}
+                <span className={hospital.CT가용 === 'Y' ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+                  {hospital.CT가용 === 'Y' ? '가능' : '불가'}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">인공호흡기</span>
-                <span className={hospital.인공호흡기_가능 === 'Y' ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
-                  {hospital.인공호흡기_가능 === 'Y' ? '가능' : '불가'}
+                <span className={hospital.인공호흡기 > 0 ? 'text-green-500 font-semibold' : 'text-red-500 font-semibold'}>
+                  {hospital.인공호흡기 > 0 ? '가능' : '불가'}
                 </span>
               </div>
             </div>
@@ -123,8 +123,8 @@ export default function HospitalCard({ hospital, index }: HospitalCardProps) {
             <Ambulance className="w-4 h-4" />
             <span>
               구급차:{' '}
-              <span className={hospital.구급차_가용 === 'Y' ? 'text-green-500 font-medium' : 'text-red-500 font-medium'}>
-                {hospital.구급차_가용 === 'Y' ? '가용' : '불가'}
+              <span className={hospital.구급차가용 > 0 ? 'text-green-500 font-medium' : 'text-red-500 font-medium'}>
+                {hospital.구급차가용 > 0 ? '가용' : '불가'}
               </span>
             </span>
           </div>

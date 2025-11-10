@@ -186,13 +186,13 @@ export default function HospitalDetailPage({ params }: { params: Promise<{ id: s
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">신경중환자실</span>
                 <span className="text-lg font-bold text-[#287dff]">
-                  {hospital.중환자실_신경}
+                  {hospital.신경중환자실}
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600">일반중환자실</span>
                 <span className="text-lg font-bold text-[#287dff]">
-                  {hospital.중환자실_일반}
+                  {hospital.일반중환자실}
                 </span>
               </div>
             </div>
@@ -214,40 +214,40 @@ export default function HospitalDetailPage({ params }: { params: Promise<{ id: s
                 <span className="text-sm text-gray-600 block mb-1">CT</span>
                 <span
                   className={`text-sm font-bold ${
-                    hospital.CT_가능 === 'Y' ? 'text-green-500' : 'text-red-500'
+                    hospital.CT가용 === 'Y' ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {hospital.CT_가능 === 'Y' ? '가능' : '불가'}
+                  {hospital.CT가용 === 'Y' ? '가능' : '불가'}
                 </span>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600 block mb-1">MRI</span>
                 <span
                   className={`text-sm font-bold ${
-                    hospital.MRI_가능 === 'Y' ? 'text-green-500' : 'text-red-500'
+                    hospital.MRI가용 === 'Y' ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {hospital.MRI_가능 === 'Y' ? '가능' : '불가'}
+                  {hospital.MRI가용 === 'Y' ? '가능' : '불가'}
                 </span>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600 block mb-1">인공호흡기</span>
                 <span
                   className={`text-sm font-bold ${
-                    hospital.인공호흡기_가능 === 'Y' ? 'text-green-500' : 'text-red-500'
+                    hospital.인공호흡기 > 0 ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {hospital.인공호흡기_가능 === 'Y' ? '가능' : '불가'}
+                  {hospital.인공호흡기 > 0 ? `${hospital.인공호흡기}대` : '불가'}
                 </span>
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
                 <span className="text-sm text-gray-600 block mb-1">구급차</span>
                 <span
                   className={`text-sm font-bold ${
-                    hospital.구급차_가용 === 'Y' ? 'text-green-500' : 'text-red-500'
+                    hospital.구급차가용 > 0 ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {hospital.구급차_가용 === 'Y' ? '가용' : '불가'}
+                  {hospital.구급차가용 > 0 ? `${hospital.구급차가용}대` : '불가'}
                 </span>
               </div>
             </div>
