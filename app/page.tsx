@@ -43,8 +43,8 @@ export default function HomePage() {
       setFilteredHospitals(parsed);
       setLoading(false);
 
-      // 지역이 선택된 경우에만 위치 정보 가져오기
-      if (region.stage1 || region.stage2) {
+      // 시도와 시군구 모두 선택된 경우에만 위치 정보 가져오기
+      if (region.stage1 && region.stage2) {
         const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
         for (let i = 0; i < parsed.length; i++) {
